@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Meta tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Título da página -->
+    <title>Jogo da Memória</title>
+    <!-- Estilos CSS -->
+    <style>
+      /* Estilos para as cartas do jogo */
+      .card {
+        width: 100px;
+        height: 100px;
+        background-color: #ccc;
+        margin: 5px;
+        display: inline-block;
+        cursor: pointer;
+        border-radius: 5px;
+        position: relative;
+      }
+
+      /* Estilos para as imagens dentro das cartas */
+      .card img {
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none; /* Inicialmente, as imagens estão escondidas */
+      }
+
+      /* Estilo para elementos ocultos */
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Tabuleiro do jogo -->
+    <div id="game-board">
+      <!-- Cada div representa uma carta -->
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/gato.jpg" alt="Gato" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/peixe.jpg" alt="Cachorro" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/elephant.jpg" alt="Elefante" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/lion.jpg" alt="Leão" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/gato1.jpg" alt="Gato" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/peixe2.jpg" alt="Cachorro" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/elephant1.jpg" alt="Elefante" />
+      </div>
+      <div class="card" onclick="revealCard(this)">
+        <img src="../imagens/lion1.jpg" alt="Leão" />
+      </div>
+    </div>
+
+    <!-- Elemento para mostrar o tempo decorrido -->
+    <div class="timer">0</div>
+
+    <!-- Elemento de parabéns (oculto inicialmente) -->
+    <div id="congratulations" class="hidden">
+      <p>Parabéns! Você encontrou todas as cartas!</p>
+      <p>Tempo: <span id="elapsed-time">0</span> segundos</p>
+      <p>Erros: <span id="error-count">0</span></p>
+    </div>
+
+    <!-- Script JavaScript -->
+    <script>
+      // Variáveis globais para controlar o jogo
+      let firstCard = null;
+      let secondCard = null;
+      let lockBoard = false;
+      let seconds = 0;
+      let errorCount = 0;
+      // Referências para elementos HTML relevantes
+      const timerElement = document.querySelector(".timer");
+      const congratulationsElement = document.getElementById("congratulations");
+      const elapsedTimeElement = document.getElementById("elapsed-time");
+      const errorCountElement = document.getElementById("error-count");
+
+      // Função para revelar uma carta quando clicada
+      function revealCard(card) {
+        if (lockBoard) return; // Se o tabuleiro estiver bloqueado, sai da função
+        if (card === firstCard) return; // Se a carta clicada já estiver virada, sai da função
+
+        // Adiciona a classe para revelar a carta e mostra a imagem
+        card.classList.add("reveal-card");
+        card.children[0].style.display = "block";
+
+        if (!firstCard) {
+          firstCard = card; // Se for a primeira carta clicada, armazena-a
+        } else {
+          secondCard = card; // Se for a segunda carta clicada, armazena-a e verifica se há correspondência
+          checkMatch();
+        }
+      }
+
+      // Função para verificar se as duas cartas selecionadas são iguais
+      function checkMatch() {
+        let isMatch = firstCard.children[0].alt === secondCard.children[0].alt; // Verifica se as cartas têm a mesma imagem
+
+        if (isMatch) {
+          // Se houver correspondência, remove os event listeners, limpa as variáveis e verifica se o jogo acabou
+          firstCard.removeEventListener("click", revealCard);
+          secondCard.removeEventListener("click", revealCard);
+          firstCard = null;
+          secondCard = null;
+          checkEndGame();
+        } else {
+          // Se não houver correspondência, bloqueia o tabuleiro temporariamente e esconde as cartas após um intervalo
+          lockBoard = true;
+          errorCount++; // Incrementa a contagem de erros
+          setTimeout(() => {
+            firstCard.classList.remove("reveal-card");
+            secondCard.classList.remove("reveal-card");
+            firstCard.children[0].style.display = "none";
+            secondCard.children[0].style.display = "none";
+            lockBoard = false;
+            firstCard = null;
+            secondCard = null;
+          }, 1000); // Tempo de espera antes de esconder as cartas
+        }
+      }
+
+      // Função para iniciar o timer do jogo
+      function startTimer() {
+        setInterval(() => {
+          // A cada segundo, incrementa o tempo e atualiza o elemento HTML
+          seconds++;
+          timerElement.textContent = seconds;
+        }, 1000); // Intervalo de 1 segundo
+      }
+
+      // Função para verificar se todas as cartas foram encontradas e o jogo acabou
+      function checkEndGame() {
+        const activeCards = document.querySelectorAll(".card:not(.reveal-card)");
+
+        // Se não houver mais cartas ativas, o jogo acabou
+        if (activeCards.length === 0) {
+          clearInterval(timerInterval); // Para o timer
+          congratulationsElement.classList.remove("hidden"); // Mostra a mensagem de parabéns
+          elapsedTimeElement.textContent = seconds; // Mostra o tempo decorrido
+          errorCountElement.textContent = errorCount; // Mostra a quantidade de erros
+        }
+      }
+
+      // Inicia o timer ao carregar a página
+      startTimer();
+    </script>
+  </body>
+</html>
